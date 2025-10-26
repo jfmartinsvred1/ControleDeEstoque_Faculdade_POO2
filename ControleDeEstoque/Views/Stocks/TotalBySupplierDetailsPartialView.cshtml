@@ -1,0 +1,19 @@
+﻿@model IEnumerable<TotalBySupplier>
+
+<table class="table pt-5">
+    <thead>
+        <tr>
+            <th>Fornecedor</th>
+            <th>Quantidade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.SupplierName</td>
+                <td>@item.Amount</td>
+            </tr>
+        }
+    </tbody>
+</table>
