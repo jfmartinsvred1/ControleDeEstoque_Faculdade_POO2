@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ControleDeEstoque.Data;
 using ControleDeEstoque.Models;
+using Humanizer;
 
 namespace ControleDeEstoque.Controllers
 {
@@ -25,15 +26,15 @@ namespace ControleDeEstoque.Controllers
             var stocks = await _context.Stocks.Include(s => s.Product).ToListAsync();
 
             var totalBySuppliers = await _context.Orders
-                .Include(o => o.Stock)
-                    .ThenInclude(s => s.Product)
-                .Include(o => o.Supplier)
+                .Where(o => o.Stock.Product.BuyPrice > 10)
                 .GroupBy(o => new { ProductName = o.Stock.Product.Name, SupplierName = o.Supplier.Name })
+                .Where(g => g.Sum(s => s.Stock.Product.BuyPrice * s.Amount) > 5000) 
                 .Select(g => new TotalBySupplier
                 {
                     ProductName = g.Key.ProductName,
                     SupplierName = g.Key.SupplierName,
-                    Amount = g.Sum(x => x.Amount)
+                    Amount = g.Sum(x => x.Amount),
+                    OrderValue = g.Sum(x => x.Stock.Product.BuyPrice * x.Amount)
                 })
                 .ToListAsync();
 
@@ -58,21 +59,19 @@ namespace ControleDeEstoque.Controllers
             {
                 return NotFound();
             }
-
             var totalBySuppliers = await _context.Orders
-               .Include(o => o.Stock)
-               .ThenInclude(s => s.Product)
-               .Include(o => o.Supplier)
-               .Where(s=>s.Stock.Product.Id==stock.Product.Id)
-               .GroupBy(o => new { ProductName = o.Stock.Product.Name, SupplierName = o.Supplier.Name })
-               .Select(g => new TotalBySupplier
-               {
-                   ProductName = g.Key.ProductName,
-                   SupplierName = g.Key.SupplierName,
-                   Amount = g.Sum(x => x.Amount)
-               })
-               .ToListAsync();
-
+                .Include(o => o.Stock)
+                .ThenInclude(s => s.Product)
+                .Include(o => o.Supplier)
+                .Where(s => s.Stock.Product.Id == stock.Product.Id)
+                .GroupBy(o => new { ProductName = o.Stock.Product.Name, SupplierName = o.Supplier.Name })
+                .Select(g => new TotalBySupplier
+                {
+                    ProductName = g.Key.ProductName,
+                    SupplierName = g.Key.SupplierName,
+                    Amount = g.Sum(x => x.Amount)
+                })
+                .ToListAsync();
             ViewBag.TotalBySuppliersDetails = totalBySuppliers;
 
             return View(stock);

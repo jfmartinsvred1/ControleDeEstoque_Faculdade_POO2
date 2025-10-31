@@ -23,8 +23,8 @@ namespace ControleDeEstoque.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            var controleDeEstoqueContext = _context.Orders.Include(o => o.Stock.Product).Include(o => o.Supplier);
-            return View(await controleDeEstoqueContext.ToListAsync());
+            var controleDeEstoqueContext = await _context.Orders.Include(o => o.Stock.Product).Include(o => o.Supplier).ToListAsync();
+            return View(controleDeEstoqueContext);
         }
 
         // GET: Orders/Details/5
