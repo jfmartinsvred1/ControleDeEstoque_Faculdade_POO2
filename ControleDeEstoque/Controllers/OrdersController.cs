@@ -23,7 +23,12 @@ namespace ControleDeEstoque.Controllers
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            var controleDeEstoqueContext = await _context.Orders.Include(o => o.Stock.Product).Include(o => o.Supplier).ToListAsync();
+            var controleDeEstoqueContext = await _context.Orders
+                .Include(o => o.Stock.Product)
+                .Include(o => o.Supplier)
+                .OrderBy(o=>o.Amount)
+                .ToListAsync();
+
             return View(controleDeEstoqueContext);
         }
 
